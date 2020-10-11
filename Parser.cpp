@@ -15,9 +15,15 @@ Parser::Parser(Flags* global_data, int argc, char **argv) {
         string args = string(argv[i]);
         int find_dest = args.find("=");
         if (find_dest == string::npos) {
-            // Invalid Arguments
-            print_err(ERR_INVALID_ARGUMENT);
-            exit(ERR_INVALID_ARGUMENT);
+            if (args == "--help") {
+                help();
+                exit(HELP);
+            } else {
+                // Invalid Arguments
+                print_err(ERR_INVALID_ARGUMENT);
+                help();
+                exit(ERR_INVALID_ARGUMENT);
+            }
         }
 
         string key = args.substr(0, find_dest);
@@ -46,6 +52,7 @@ Parser::Parser(Flags* global_data, int argc, char **argv) {
     if (global_data->target_find == NOT_SPECIFIED) {
         // This is error
         print_err(ERR_SEARCH_NOT_DEFINED);
+        help();
         exit(ERR_SEARCH_NOT_DEFINED);
     }
 
@@ -61,11 +68,7 @@ void Parser::split(string key, string value) {
     cout << "KEy: " << key << endl;
     cout << "Value: " << value << endl;
     
-    if (key == "--help") {
-        help();
-        is_failed = true; //just let them fail
-        err_number = HELP;
-    } else if (key == "--directory") {
+    if (key == "--directory") {
         filesystem::path path_directory(value);
         if (!filesystem::exists(path_directory)) {
             // Search Directory is invalid
@@ -148,6 +151,7 @@ void Parser::split(string key, string value) {
     }
 
     if (is_failed) {
+        help();
         exit(err_number);
     } else {
         return;
