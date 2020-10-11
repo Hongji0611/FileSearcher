@@ -62,8 +62,15 @@ string FileSearch::convert_perm(filesystem::perms p) {
     return ret_val;
 }
 
-int FileSearch::file_name(){
-    vector<filesystem::directory_entry> path_container;
+int FileSearch::file_name() {
+    // regex search
+    regex re(flags->target_find);
+    ofstream ofs_output;
+
+    if (flags->save_path != "false") {
+        ofs_output.open(flags->save_path);
+    }
+    
     /**
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
@@ -71,65 +78,72 @@ int FileSearch::file_name(){
     for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
         try {
             if(filesystem::is_regular_file(iterator.path())){
-                path_container.push_back(iterator);
+                //path_container.push_back(iterator);
+                string output = "";
+                if(regex_match(string(iterator.path().filename().string()), re)){
+                    if(!(flags->file_verbose)) {
+                        output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                    } else {
+                        output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                        + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path()) + "\n";
+                    }
+
+                    // Stream
+                    cout << output;
+                    ofs_output << output;
+                    ofs_output.flush();
+                }
             }
         } catch(filesystem::filesystem_error what_err) {
             cout << iterator.path().string() << ": " << what_err.what() << endl;
         }  
     }
 
-    // regex search
-    regex re(flags->target_find);
-    
-    string output="";
-    for(auto& iterator: path_container){
-        if(regex_match(string(iterator.path().filename().string()), re)){
-            if(!(flags->file_verbose)) {
-                output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
-            } else {
-                output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
-                + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path()) + "\n";
-            }
-            
-        }
+    if (ofs_output.is_open()) {
+        ofs_output.close();
     }
-    cout << output << endl; 
-    if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
 
 int FileSearch::directory_name(){
-    vector<filesystem::directory_entry> path_container;
+    // regex search
+    regex re(flags->target_find);
+
+    ofstream ofs_output;
+    if (flags->directory_path != "false") {
+        ofs_output.open(flags->directory_path);
+    }
+
     /**
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
          try {
             if(filesystem::is_directory(iterator.path())){
-                path_container.push_back(iterator);
+                if(regex_match(string(iterator.path().filename().string()), re)){
+                    string output = "";
+                    if(!(flags->file_verbose)) {
+                        output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                    } else {
+                        output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                        + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
+                    }
+                    if (flags->directory_path != "false") {
+                        ofs_output << output;
+                        ofs_output.flush();
+                    }
+                    cout << output;
+                }
             }
         } catch(filesystem::filesystem_error what_err) {
             cout << iterator.path().string() << ": " << what_err.what() << endl;
         } 
     }
-    // regex search
-    regex re(flags->target_find);
     
-    string output="";
-    for(auto& iterator: path_container){
-        if(regex_match(string(iterator.path().filename().string()), re)){
-            if(!(flags->file_verbose)) {
-                output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
-            } else {
-                output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
-                + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
-            }
-            
-        }
+    if (ofs_output.is_open()) {
+        ofs_output.close();
     }
-    cout << output << endl; 
-    if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
     
@@ -139,8 +153,13 @@ int FileSearch::grep(){
     //regex search
     regex re(flags->target_find);
     string target = flags->target_find;
+
+    ofstream ofs_output;
+    if (flags->directory_path != "false") {
+        ofs_output.open(flags->directory_path);
+    }
     
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
         try {
             if(filesystem::is_regular_file(iterator.path())){
                 ifstream readFile;
@@ -157,7 +176,19 @@ int FileSearch::grep(){
                     readFile.read(buffer, length);
 
                     if(regex_search(buffer, re)){   //find
-                        path_container.push_back(iterator);
+                        string output = "";
+                        if(!(flags->file_verbose)) {
+                            output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                        } else {
+                            output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                            + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
+                        }
+                        if (flags->directory_path != "false") {
+                            ofs_output << output;
+                            ofs_output.flush();
+                        }
+
+                        cout << output;
                     }
 
                     readFile.close();
@@ -168,17 +199,17 @@ int FileSearch::grep(){
             cout << iterator.path().string() << ": " << ec.what() << endl; 
         }
     }
-    string output="";
-    for(auto& iterator: path_container){
-        if(!(flags->file_verbose)) {
-            output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
-        } else {
-            output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
-            + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
-        }
-    }
-    cout << output << endl; 
-    if(!(flags->save_path == "false")) save_output(output);
+    // string output="";
+    // for(auto& iterator: path_container){
+    //     if(!(flags->file_verbose)) {
+    //         output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+    //     } else {
+    //         output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+    //         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
+    //     }
+    // }
+    // cout << output << endl; 
+    // if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
 
