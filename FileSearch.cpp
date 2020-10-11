@@ -34,7 +34,7 @@ string FileSearch::type_string(filesystem::file_type type_file) {
 
 string FileSearch::convert_lwt(filesystem::path t) {
     auto ftime = filesystem::last_write_time(t);
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) defined(__linux__) || defined(__unix__)
     auto converted = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
     time_t tmp_converting = std::chrono::system_clock::to_time_t(converted);
     struct tm* dt;
