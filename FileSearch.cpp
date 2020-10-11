@@ -104,7 +104,7 @@ int FileSearch::directory_name(){
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
          try {
             if(filesystem::is_directory(iterator.path())){
                 path_container.push_back(iterator);
@@ -140,7 +140,7 @@ int FileSearch::grep(){
     regex re(flags->target_find);
     string target = flags->target_find;
     
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
         try {
             if(filesystem::is_regular_file(iterator.path())){
                 ifstream readFile;
