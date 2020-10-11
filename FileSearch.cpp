@@ -68,11 +68,16 @@ int FileSearch::file_name(){
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path)) {
-        if(filesystem::is_regular_file(iterator.path())){
-            path_container.push_back(iterator);
-        }    
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
+        try {
+            if(filesystem::is_regular_file(iterator.path())){
+                path_container.push_back(iterator);
+            }
+        } catch(filesystem::filesystem_error what_err) {
+            cout << iterator.path().string() << ": " << what_err.what() << endl;
+        }  
     }
+
     // regex search
     regex re(flags->target_find);
     
@@ -99,10 +104,14 @@ int FileSearch::directory_name(){
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path)) {
-        if(filesystem::is_directory(iterator.path())){
-            path_container.push_back(iterator);
-        }    
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+         try {
+            if(filesystem::is_directory(iterator.path())){
+                path_container.push_back(iterator);
+            }
+        } catch(filesystem::filesystem_error what_err) {
+            cout << iterator.path().string() << ": " << what_err.what() << endl;
+        } 
     }
     // regex search
     regex re(flags->target_find);
@@ -131,28 +140,32 @@ int FileSearch::grep(){
     regex re(flags->target_find);
     string target = flags->target_find;
     
-    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path)) {
-        if(filesystem::is_regular_file(iterator.path())){
-            ifstream readFile;
-            readFile.open(iterator.path(), std::fstream::in | std::fstream::binary);
-            if (readFile.is_open()) {
-                //get length of file
-                readFile.seekg(0, readFile.end);
-                int length = readFile.tellg();
-                readFile.seekg(0, readFile.beg);
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path), filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied)) {
+        try {
+            if(filesystem::is_regular_file(iterator.path())){
+                ifstream readFile;
+                readFile.open(iterator.path(), std::fstream::in | std::fstream::binary);
+                if (readFile.is_open()) {
+                    //get length of file
+                    readFile.seekg(0, readFile.end);
+                    int length = readFile.tellg();
+                    readFile.seekg(0, readFile.beg);
 
-                char* buffer = new char[length];
+                    char* buffer = new char[length];
 
-                //read data as a block
-                readFile.read(buffer, length);
+                    //read data as a block
+                    readFile.read(buffer, length);
 
-                if(regex_search(buffer, re)){   //find
-                    path_container.push_back(iterator);
+                    if(regex_search(buffer, re)){   //find
+                        path_container.push_back(iterator);
+                    }
+
+                    readFile.close();
+                    delete[] buffer;
                 }
-
-                readFile.close();
-                delete[] buffer;
             }
+        } catch (filesystem::filesystem_error ec) {
+            cout << iterator.path().string() << ": " << ec.what() << endl; 
         }
     }
     string output="";
