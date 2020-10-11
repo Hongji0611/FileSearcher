@@ -12,17 +12,6 @@
 using namespace std;
 using namespace std::chrono_literals;
 
-/*
-class Flags {
-public:
-    string type;
-    string directory_path;
-    string target_find;
-    bool file_verbose;
-    string save_path;
-};
-*/
-
 class FileSearch{
 private:
     Flags* flags;

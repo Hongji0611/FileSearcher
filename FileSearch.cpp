@@ -86,20 +86,76 @@ int FileSearch::file_name(){
 int FileSearch::directory_name(){
     vector<filesystem::directory_entry> path_container;
     /**
-     * Use Auto && Follow latest CPP reference
+     * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
-    for (auto& iterator : filesystem::directory_iterator(flags->directory_path)) {
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path)) {
         if(filesystem::is_directory(iterator.path())){
             path_container.push_back(iterator);
         }    
     }
+    // regex search
+    regex re(flags->target_find);
     
+    string output="";
+    for(auto& iterator: path_container){
+        if(regex_match(string(iterator.path().filename()), re)){
+            if(!(flags->file_verbose)) {
+                output += "File: "+ string(iterator.path().filename()) +"\tPath: " + string(iterator.path()) +"\n";
+            } else {
+                output += string(iterator.path().filename()) + "\t" +  string(iterator.path()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
+            }
+            
+        }
+    }
+    cout << output << endl; 
+    if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
     
 int FileSearch::grep(){
+    vector<filesystem::directory_entry> path_container;
 
+    //regex search
+    regex re(flags->target_find);
+    string target = flags->target_find;
+    
+    for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path)) {
+        if(filesystem::is_regular_file(iterator.path())){
+            ifstream readFile;
+            readFile.open(iterator.path(), std::fstream::in | std::fstream::binary);
+            if (readFile.is_open()) {
+                //get length of file
+                readFile.seekg(0, readFile.end);
+                int length = readFile.tellg();
+                readFile.seekg(0, readFile.beg);
+
+                char* buffer = new char[length];
+
+                //read data as a block
+                readFile.read(buffer, length);
+
+                if(regex_search(buffer, re)){   //find
+                    path_container.push_back(iterator);
+                }
+
+                readFile.close();
+                delete[] buffer;
+            }
+        }
+    }
+    string output="";
+    for(auto& iterator: path_container){
+        if(!(flags->file_verbose)) {
+            output += "File: "+ string(iterator.path().filename()) +"\tPath: " + string(iterator.path()) +"\n";
+        } else {
+            output += string(iterator.path().filename()) + "\t" +  string(iterator.path()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+            + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
+        }
+    }
+    cout << output << endl; 
+    if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
 
@@ -107,6 +163,7 @@ int FileSearch::save_output(string& output){
     ofstream out;
     out.open(flags->save_path);
     out << output << endl;
+    cout<< "Successfully saved output to: "<< flags->save_path <<endl;
     out.close();
     
     return 0;

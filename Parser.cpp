@@ -16,7 +16,6 @@ Parser::Parser(Flags* global_data, int argc, char **argv) {
         int find_dest = args.find("=");
         if (find_dest == string::npos) {
             // Invalid Arguments
-            cout << "THis" << endl;
             print_err(ERR_INVALID_ARGUMENT);
             exit(ERR_INVALID_ARGUMENT);
         }
@@ -86,7 +85,43 @@ void Parser::split(string key, string value) {
             global_settings->type = value;
         }
     } else if (key == "--to_find") {
-        global_settings->target_find = value;
+        string tmp_use = "";
+        // For changing user-input wildcard to program-acceptable state.
+        for (int i = 0; i < value.length(); i++) {
+            if (value.at(i) == '*') {
+                tmp_use.append(".*");
+            } else if (value.at(i) == '?') {
+                tmp_use.append(".");
+            } else if (value.at(i) == '.') {
+                tmp_use.append("\\.");
+            } else if (value.at(i) == '^') {
+                tmp_use.append("\\^");
+            } else if (value.at(i) == '$') {
+                tmp_use.append("\\$");
+            } else if (value.at(i) == '[') {
+                tmp_use.append("\\[");
+            } else if (value.at(i) == ']') {
+                tmp_use.append("\\]");
+            } else if (value.at(i) == '-') {
+                tmp_use.append("\\-");
+            } else if (value.at(i) == '|') {
+                tmp_use.append("\\|");
+            } else if (value.at(i) == '(') {
+                tmp_use.append("\\(");
+            } else if (value.at(i) == ')') {
+                tmp_use.append("\\)");
+            } else if (value.at(i) == '+') {
+                tmp_use.append("\\+");
+            } else if (value.at(i) == '{') {
+                tmp_use.append("\\{");
+            } else if (value.at(i) == '}') {
+                tmp_use.append("\\}");
+            } else {
+                tmp_use += value.at(i);
+            }
+        }
+        cout << tmp_use << endl;
+        global_settings->target_find = tmp_use;
     } else if (key == "--file_verbose") {
         if (value != "true" && value != "false") {
             print_err(ERR_INVALID_ARGUMENT);

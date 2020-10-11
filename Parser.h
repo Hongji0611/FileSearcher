@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <filesystem>
+#include <vector>
 #include "Flags.h"
 using namespace std;
 
