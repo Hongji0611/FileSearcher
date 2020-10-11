@@ -26,4 +26,5 @@ public:
     string type_string(filesystem::file_type);
     string convert_lwt(filesystem::path t);
     string convert_perm(filesystem::perms p);
+    string get_directory_size(filesystem::path t);
 };
