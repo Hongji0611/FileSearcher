@@ -5,6 +5,20 @@ FileSearch::FileSearch(Flags* flags)
 {
 }
 
+atomic<bool> FileSearch::consume_flag = false;
+atomic<bool> FileSearch::finish_func = false;
+void FileSearch::print_thread(vector<string>* vector_container) {
+    while (finish_func == false) {
+        if (vector_container->size() != 0) {
+            if (consume_flag) {
+                cout << vector_container->back();
+                vector_container->pop_back();
+                consume_flag = false;
+            }
+        }
+    }
+}
+
 string FileSearch::type_string(filesystem::file_type type_file) {
     string return_value = "";
     if (type_file == filesystem::file_type::not_found) {
@@ -67,6 +81,8 @@ int FileSearch::file_name() {
     regex re(flags->target_find);
     ofstream ofs_output;
 
+    vector<string> container_vector;
+
     if (flags->save_path != "false") {
         ofs_output.open(flags->save_path);
     }
@@ -75,6 +91,7 @@ int FileSearch::file_name() {
      * Use Auto && Follow latest CPP reference 
      * Also, push FULL ABSOLUTE path to vector
      */
+    thread t1(&FileSearch::print_thread, &container_vector);
     for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
         try {
             if(filesystem::is_regular_file(iterator.path())){
@@ -87,19 +104,23 @@ int FileSearch::file_name() {
                         output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
                         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path()) + "\n";
                     }
+                    container_vector.push_back(output);
+                    consume_flag = true;
 
                     // Stream
-                    cout << output;
-                    if (flags->save_path != "false") {
-                        ofs_output << output;
-                        ofs_output.flush();
-                    }
+                    // cout << output;
+                    // if (flags->save_path != "false") {
+                    //     ofs_output << output;
+                    //     ofs_output.flush();
+                    // }
                 }
             }
         } catch(filesystem::filesystem_error what_err) {
             cout << iterator.path().string() << ": " << what_err.what() << endl;
         }  
     }
+
+    finish_func = true;
 
     if (ofs_output.is_open()) {
         cout<< "Successfully saved output to: "<< flags->save_path <<endl;

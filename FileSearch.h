@@ -6,6 +6,8 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <atomic>
+#include <thread>
 
 #include "Flags.h"
 
@@ -21,6 +23,9 @@ public:
     int file_name();
     int directory_name();
     int grep();
+    static atomic<bool> consume_flag;
+    static atomic<bool> finish_func;
+    static void print_thread(vector<string>* vector_container);
 
     int save_output(string& output);
     string type_string(filesystem::file_type);
