@@ -214,17 +214,6 @@ int FileSearch::grep(){
             cout << iterator.path().string() << ": " << ec.what() << endl; 
         }
     }
-    // string output="";
-    // for(auto& iterator: path_container){
-    //     if(!(flags->file_verbose)) {
-    //         output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
-    //     } else {
-    //         output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
-    //         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
-    //     }
-    // }
-    // cout << output << endl; 
-    // if(!(flags->save_path == "false")) save_output(output);
     return 0;
 }
 
