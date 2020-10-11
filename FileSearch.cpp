@@ -90,8 +90,10 @@ int FileSearch::file_name() {
 
                     // Stream
                     cout << output;
-                    ofs_output << output;
-                    ofs_output.flush();
+                    if (flags->save_path != "false") {
+                        ofs_output << output;
+                        ofs_output.flush();
+                    }
                 }
             }
         } catch(filesystem::filesystem_error what_err) {
@@ -100,6 +102,7 @@ int FileSearch::file_name() {
     }
 
     if (ofs_output.is_open()) {
+        cout<< "Successfully saved output to: "<< flags->save_path <<endl;
         ofs_output.close();
     }
     return 0;
@@ -157,6 +160,7 @@ int FileSearch::directory_name(){
     }
     
     if (ofs_output.is_open()) {
+        cout<< "Successfully saved output to: "<< flags->save_path <<endl;
         ofs_output.close();
     }
     return 0;
@@ -213,6 +217,11 @@ int FileSearch::grep(){
         } catch (filesystem::filesystem_error ec) {
             cout << iterator.path().string() << ": " << ec.what() << endl; 
         }
+    }
+
+    if (ofs_output.is_open()) {
+        cout<< "Successfully saved output to: "<< flags->save_path <<endl;
+        ofs_output.close();
     }
     return 0;
 }
