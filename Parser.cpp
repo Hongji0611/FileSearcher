@@ -65,8 +65,6 @@ Parser::Parser(Flags* global_data, int argc, char **argv) {
 void Parser::split(string key, string value) {
     bool is_failed = false;
     int err_number = 0;
-    cout << "KEy: " << key << endl;
-    cout << "Value: " << value << endl;
     
     if (key == "--directory") {
         filesystem::path path_directory(value);
