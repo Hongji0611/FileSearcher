@@ -82,9 +82,9 @@ int FileSearch::file_name() {
                 string output = "";
                 if(regex_match(string(iterator.path().filename().string()), re)){
                     if(!(flags->file_verbose)) {
-                        output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                        output += "File: "+ iterator.path().filename().string() +"\tPath: " + iterator.path().string() +"\n";
                     } else {
-                        output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                        output += iterator.path().filename().string() + "\t" +  iterator.path().string() + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
                         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path()) + "\n";
                     }
 
@@ -142,9 +142,9 @@ int FileSearch::directory_name(){
                 if(regex_match(string(iterator.path().filename().string()), re)){
                     string output = "";
                     if(!(flags->file_verbose)) {
-                        output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                        output += "File: "+ iterator.path().filename().string() +"\tPath: " + iterator.path().string() +"\n";
                     } else {
-                        output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + get_directory_size(iterator.path()) + "\t" 
+                        output += iterator.path().filename().string() + "\t" +  iterator.path().string() + "\t" + get_directory_size(iterator.path()) + "\t" 
                         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
                     }
                     if (flags->directory_path != "false") {
@@ -197,9 +197,9 @@ int FileSearch::grep(){
                     if(regex_search(buffer, re)){   //find
                         string output = "";
                         if(!(flags->file_verbose)) {
-                            output += "File: "+ string(iterator.path().filename().string()) +"\tPath: " + string(iterator.path().string()) +"\n";
+                            output += "File: "+ iterator.path().filename().string() +"\tPath: " + iterator.path().string() +"\n";
                         } else {
-                            output += string(iterator.path().filename().string()) + "\t" +  string(iterator.path().string()) + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
+                            output += iterator.path().filename().string() + "\t" +  iterator.path().string() + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
                             + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
                         }
                         if (flags->directory_path != "false") {
