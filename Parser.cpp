@@ -134,10 +134,15 @@ void Parser::split(string key, string value) {
     } else if (key == "--save_output") {
         filesystem::path path_directory(value);
         if (!filesystem::exists(path_directory)) {
-            // Search Directory is invalid
-            print_err(ERR_INVALID_OUTPUT_DIRECTORY);
-            is_failed = true; //just let them fail
-            err_number = ERR_INVALID_OUTPUT_DIRECTORY;
+            filesystem::path abs_path = filesystem::absolute(path_directory);
+            if (!filesystem::exists(abs_path.parent_path())) {
+                // Search Directory is invalid
+                print_err(ERR_INVALID_OUTPUT_DIRECTORY);
+                is_failed = true; //just let them fail
+                err_number = ERR_INVALID_OUTPUT_DIRECTORY;
+            } else {
+                global_settings->save_path = value;
+            }
         } else {
             global_settings->save_path = value;
         }
