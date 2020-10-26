@@ -128,8 +128,8 @@ int FileSearch::directory_name(){
     regex re(flags->target_find);
 
     ofstream ofs_output;
-    if (flags->directory_path != "false") {
-        ofs_output.open(flags->directory_path);
+    if (flags->save_path != "false") {
+        ofs_output.open(flags->save_path);
     }
 
     /**
@@ -147,7 +147,7 @@ int FileSearch::directory_name(){
                         output += iterator.path().filename().string() + "\t" +  iterator.path().string() + "\t" + get_directory_size(iterator.path()) + "\t" 
                         + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
                     }
-                    if (flags->directory_path != "false") {
+                    if (flags->save_path != "false") {
                         ofs_output << output;
                         ofs_output.flush();
                     }
@@ -174,8 +174,8 @@ int FileSearch::grep(){
     string target = flags->target_find;
 
     ofstream ofs_output;
-    if (flags->directory_path != "false") {
-        ofs_output.open(flags->directory_path);
+    if (flags->save_path != "false") {
+        ofs_output.open(flags->save_path);
     }
     
     for (auto& iterator : filesystem::recursive_directory_iterator(flags->directory_path, filesystem::directory_options(std::filesystem::directory_options::skip_permission_denied))) {
@@ -202,7 +202,7 @@ int FileSearch::grep(){
                             output += iterator.path().filename().string() + "\t" +  iterator.path().string() + "\t" + to_string(filesystem::file_size(iterator)) + "\t" 
                             + type_string(filesystem::status(iterator.path()).type()) + "\t" + convert_perm(filesystem::status(iterator.path()).permissions()) + "\t" + convert_lwt(iterator.path());
                         }
-                        if (flags->directory_path != "false") {
+                        if (flags->save_path != "false") {
                             ofs_output << output;
                             ofs_output.flush();
                         }
