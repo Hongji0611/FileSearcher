@@ -131,6 +131,12 @@ void Parser::split(string key, string value) {
             global_settings->file_verbose = (value == "true") ? true:false;
         }
     } else if (key == "--save_output") {
+        if (value.length() == 0) {
+            print_err(ERR_INVALID_OUTPUT_DIRECTORY);
+            is_failed = true; //just let them fail
+            err_number = ERR_INVALID_OUTPUT_DIRECTORY;
+            goto exit_final;
+        }
         filesystem::path path_directory(value);
         if (!filesystem::exists(path_directory)) {
             filesystem::path abs_path = filesystem::absolute(path_directory);
@@ -152,6 +158,7 @@ void Parser::split(string key, string value) {
         err_number = ERR_INVALID_ARGUMENT;
     }
 
+exit_final:
     if (is_failed) {
         help();
         exit(err_number);

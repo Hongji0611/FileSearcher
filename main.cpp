@@ -19,6 +19,9 @@ using namespace std;
  */
 
 int main(int argc, char**argv) {
+    for (int i = 0; i < argc; i++) {
+        cout << argv[i] << endl;
+    }
     Flags search_flags;
     Parser args_parser(&search_flags, argc, argv);
     FileSearch tmp_fs(&search_flags);
