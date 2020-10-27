@@ -121,7 +121,6 @@ void Parser::split(string key, string value) {
                 tmp_use += value.at(i);
             }
         }
-        cout << tmp_use << endl;
         global_settings->target_find = tmp_use;
     } else if (key == "--file_verbose") {
         if (value != "true" && value != "false") {
